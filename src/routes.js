@@ -1,8 +1,8 @@
 import Inicio from "./pages/Inicio";
 
 const routes = [
-    {     
-        path: "/",
+    {
+        path: "/*",
         component: Inicio,
         name: "Inicio",
         meta: { title: "Inicio" },
