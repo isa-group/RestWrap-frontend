@@ -103,16 +103,17 @@
             }
           });
         }
-        
+        /*
         if (url.length > 5) {
           setTimeout(() => {
             let sublist = url.slice(5, url.length).join("/");
             this.restwrapFolder(`https://api.github.com/repos/${this.username}/${url[4]}/contents/${sublist}`);
           }, 4000);
         }
+        */
       },
       getApiStats(apiUrl) {
-        axios.get(`https://restwrap-dbrincau.herokuapp.com/api/v1/stats/${apiUrl}`)
+        axios.get(`${process.env.VUE_APP_BACK_URL}stats/${apiUrl}`)
           .then(response => {
             this.apiStatsLoaded = false;
             if (response.data.message == "200 Ok") this.apiStatsLoaded = true;
@@ -123,7 +124,7 @@
           });
       },
       restwrapFolder(url) {
-        axios.post(`https://restwrap-dbrincau.herokuapp.com/api/v1/content`, {"url": url})
+        axios.post(`${process.env.VUE_APP_BACK_URL}content`, {"url": url})
           .then(response => {
             this.repositoryData = response.data.data;
             this.api = {};
@@ -138,7 +139,7 @@
         api = api.replace("https://api.github.com/repos/", "");
         api = api.replace("?ref=main", "");
         this.getApiStats(api);
-        axios.get(`https://restwrap-dbrincau.herokuapp.com/api/v1/service/${api}`)
+        axios.get(`${process.env.VUE_APP_BACK_URL}service/${api}`)
           .then(response => {
             this.api = response.data.data;
           })
@@ -148,7 +149,7 @@
       },
       restwrapRepositories() {
         if (this.username != "") {
-          axios.get(`https://restwrap-dbrincau.herokuapp.com/api/v1/repositories/${this.username}`)
+          axios.get(`${process.env.VUE_APP_BACK_URL}repositories/${this.username}`)
           .then(response => {
             this.repositories = response.data.data;
             this.api = {};
@@ -161,7 +162,7 @@
         }
       },
       restwrapRepositoryData(username, repository) {
-        axios.get(`https://restwrap-dbrincau.herokuapp.com/api/v1/data/${username}/${repository}`)
+        axios.get(`${process.env.VUE_APP_BACK_URL}data/${username}/${repository}`)
           .then(response => {
             this.repositoryData = response.data.data;
             this.api = {};
