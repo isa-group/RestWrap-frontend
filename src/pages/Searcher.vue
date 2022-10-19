@@ -1,6 +1,6 @@
 <template>
   <div id="Seacher">
-    Username / Organization: 
+    Username / Organization:
     <input type="text" v-model="username" class="searchUser">
     <button class="button-62" role="button" @click="restwrapRepositories()">
       Search
@@ -13,7 +13,7 @@
     </select>
     <ul class="fileList">
       <li v-for="file in repositoryData" :key="file.id">
-        <a class="fileObject" @click="restwrapFolder(file.url)" v-if="file.name && (file.type == 'dir' || file.type == 'tree')">{{file.name}}</a>
+        <a class="fileObject" @click="restwrapFolder(file.url, file.name)" v-if="file.name && (file.type == 'dir' || file.type == 'tree')">{{file.name}}</a>
         <a class="fileObject" @click="restwrapPlan(file.url)" v-if="file.name && (file.type != 'dir' && file.type != 'tree')">{{file.name}}</a>
       </li>
     </ul>
@@ -50,7 +50,20 @@
     <pre v-if="Object.keys(api).length != 0" class="api-content">
       {{api.content}}
     </pre>
-    <br><br><br><br>
+    <br><br>
+    <div v-if="folderStatsLoaded">
+      <pre class="preStats">
+      Number of APIs: {{folderStats.plansQuantity}}
+      Number of APIs with limitations: {{folderStats.hasLimitations}}
+      Number of APIs with quotas: {{folderStats.hasQuotas}}
+      Number of APIs with rates: {{folderStats.hasRates}}
+      Number of APIs with both (quotas and rates): {{folderStats.hasQuotasAndRates}}
+      Number of APIs with a simple cost: {{folderStats.hasSimpleCost}}
+      Number of APIs with a pay-as-you-go plan: {{folderStats.hasPayAsYouGo}}
+      Number of APIs with a overage: {{folderStats.hasOvegare}}
+      </pre>
+    </div>
+    <br><br>
   </div>
 </template>
 
@@ -71,6 +84,10 @@
         route: "https://api.github.com/repos/",
         apiStats: {},
         apiStatsLoaded: false,
+        actualRepository: "",
+        actualFolder: "",
+        folderStats: {},
+        folderStatsLoaded: false
       }
     },
     methods: {
@@ -123,7 +140,9 @@
             console.log(error);
           });
       },
-      restwrapFolder(url) {
+      restwrapFolder(url, fileName) {
+        this.actualFolder += fileName + "/";
+        this.restWrapStats(this.actualFolder);
         axios.post(`${process.env.VUE_APP_BACK_URL}content`, {"url": url})
           .then(response => {
             this.repositoryData = response.data.data;
@@ -133,7 +152,23 @@
           })
           .catch(error => {
             console.log(error)
+          });
+      },
+      restWrapStats() {
+        this.folderStatsLoaded = false;
+        axios.post(`${process.env.VUE_APP_BACK_URL}repositoryStats/`, {
+            "user": this.username,
+            "repo": this.actualRepository,
+            "path": this.actualFolder 
           })
+          .then(response => {
+            this.folderStatsLoaded = true;
+            this.folderStats = response.data;
+            console.log(response.data);
+          })
+          .catch(error => {
+            console.log(error)
+          });
       },
       restwrapPlan(api) {
         api = api.replace("https://api.github.com/repos/", "");
@@ -148,6 +183,10 @@
           });
       },
       restwrapRepositories() {
+        this.folderStatsLoaded = false;
+        this.actualRepository = ""
+        this.actualFolder = ""
+        this.folderStats = {}
         if (this.username != "") {
           axios.get(`${process.env.VUE_APP_BACK_URL}repositories/${this.username}`)
           .then(response => {
@@ -162,8 +201,14 @@
         }
       },
       restwrapRepositoryData(username, repository) {
+        this.folderStatsLoaded = false;
+        this.actualRepository = ""
+        this.actualFolder = ""
+        this.folderStats = {}
+        this.actualRepository = repository;
         axios.get(`${process.env.VUE_APP_BACK_URL}data/${username}/${repository}`)
           .then(response => {
+            this.restWrapStats();
             this.repositoryData = response.data.data;
             this.api = {};
             this.apiStats = {};
