@@ -51,7 +51,7 @@
       {{api.content}}
     </pre>
     <br><br>
-    <div v-if="folderStatsLoaded">
+    <div v-if="folderStatsLoaded" class="preContainer">
       <pre class="preStats">
       Number of APIs: {{folderStats.plansQuantity}}
       Number of APIs with limitations: {{folderStats.hasLimitations}}
@@ -339,6 +339,7 @@ pre {
   margin-top: 10px;
   background-color: #ffffff;
   border: #ffffff;
+  margin: auto;
 }
 
 table {
@@ -348,5 +349,10 @@ td, th {
   border: 1px solid #898989;
   text-align: left;
   padding: 8px;
+}
+
+.preContainer {
+  display: flex;
+  margin: auto;
 }
 </style>
