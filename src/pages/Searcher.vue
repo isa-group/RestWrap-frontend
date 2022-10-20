@@ -1,16 +1,22 @@
 <template>
   <div id="Seacher">
     Username / Organization:
-    <input type="text" v-model="username" class="searchUser">
-    <button class="button-62" role="button" @click="restwrapRepositories()">
+    <input type="text" v-model="username" class="searchUser" style="margin-right: 20px;">
+    <button class="button-62" role="button" @click="restwrapRepositories()" v-if="username != '' && repositoryName == ''">
       Search
     </button>
     &ensp;
     Repository:
-    <select name="repositories" id="repositories" v-if="repositories.length != 0">
+    <select name="repositories" id="repositories" v-if="repositories.length != 0" v-model="repositoryName" class="searchUser" style="margin-right: 20px;">
       <option value="0">Choose a repository</option>
-      <option v-for="repository in repositories" :key="repository.id" :value="repository" @click="restwrapRepositoryData(username, repository.name)">{{repository.name}}</option>
+      <option v-for="repository in repositories" :key="repository.id" :value="repository.name">{{repository.name}}</option>
     </select>
+    <button class="button-62" role="button" @click="restwrapRepositoryData(username, repositoryName)" v-if="username != '' && repositoryName != '' && Object.keys(repositoryData).length == 0">
+      Search
+    </button>
+    <button class="button-62" role="button"  style="background: linear-gradient(to bottom right, #47e9ef, #785aff);" @click="reloadWebsite()" v-if="Object.keys(repositoryData).length != 0">
+      Reset Search
+    </button>
     <ul class="fileList">
       <li v-for="file in repositoryData" :key="file.id">
         <a class="fileObject" @click="restwrapFolder(file.url, file.name)" v-if="file.name && (file.type == 'dir' || file.type == 'tree')">{{file.name}}</a>
@@ -78,6 +84,7 @@
     data() {
       return {
         username: "",
+        repositoryName: "",
         api: {},
         repositories: [],
         repositoryData: {},
@@ -128,6 +135,9 @@
           }, 4000);
         }
         */
+      },
+      reloadWebsite() {
+        this.$router.go();
       },
       getApiStats(apiUrl) {
         axios.get(`${process.env.VUE_APP_BACK_URL}stats/${apiUrl}`)
@@ -201,6 +211,7 @@
         }
       },
       restwrapRepositoryData(username, repository) {
+        console.log("Me cago en mis muertos");
         this.folderStatsLoaded = false;
         this.actualRepository = ""
         this.actualFolder = ""
