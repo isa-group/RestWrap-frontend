@@ -136,6 +136,11 @@
         }
         */
       },
+      defaultSearch() {
+        this.username = "isa-group";
+        this.repositoryName = "datasets";
+        this.restwrapRepositoryData(this.username, this.repositoryName);
+      },
       reloadWebsite() {
         this.$router.go();
       },
@@ -211,7 +216,6 @@
         }
       },
       restwrapRepositoryData(username, repository) {
-        console.log("Me cago en mis muertos");
         this.folderStatsLoaded = false;
         this.actualRepository = ""
         this.actualFolder = ""
@@ -232,6 +236,7 @@
     },
     mounted() {
       this.getUrl();
+      this.defaultSearch();
     }
   };
 </script>
