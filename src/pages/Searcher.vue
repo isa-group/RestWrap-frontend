@@ -37,14 +37,18 @@
 
       Plans:
       </pre>
-      <table id="apiStats">
+      <table id="apiStats" v-if="apiStats.plans[Object.keys(apiStats.plans)[0]].pricing.currency">
         <tr>
           <th></th>
           <th v-for="plan in Object.keys(apiStats.plans)" :key="plan" :value="plan">{{plan}}</th>
         </tr>
         <tr>
           <th>Cost</th>
-          <td v-for="plan in apiStats.plans" :key="plan" :value="plan">{{plan.pricing.cost}} {{plan.pricing.currency}}/{{plan.pricing.period.unit}}</td>
+          <td v-for="plan in apiStats.plans" :key="plan" :value="plan">
+            <p v-if="plan.pricing.currency">
+              {{plan.pricing.cost}} {{plan.pricing.currency}}/{{plan.pricing.period.unit}}
+            </p>
+          </td>
         </tr>
         <tr>
           <th>N. Endpoints</th>
@@ -57,6 +61,7 @@
       {{api.content}}
     </pre>
     <br><br>
+    <p v-if="loading">LOADING...</p>
     <div v-if="folderStatsLoaded" class="preContainer">
       <pre class="preStats">
       Number of APIs: {{folderStats.plansQuantity}}
@@ -94,7 +99,8 @@
         actualRepository: "",
         actualFolder: "",
         folderStats: {},
-        folderStatsLoaded: false
+        folderStatsLoaded: false,
+        loading: false
       }
     },
     methods: {
@@ -170,6 +176,7 @@
           });
       },
       restWrapStats() {
+        this.loading = true;
         this.folderStatsLoaded = false;
         axios.post(`${process.env.VUE_APP_BACK_URL}repositoryStats/`, {
             "user": this.username,
@@ -177,6 +184,7 @@
             "path": this.actualFolder 
           })
           .then(response => {
+            this.loading = false;
             this.folderStatsLoaded = true;
             this.folderStats = response.data;
             console.log(response.data);
@@ -236,7 +244,7 @@
     },
     mounted() {
       this.getUrl();
-      this.defaultSearch();
+      //this.defaultSearch();
     }
   };
 </script>
