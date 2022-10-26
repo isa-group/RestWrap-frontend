@@ -55,6 +55,24 @@
           <td v-for="plan in apiStats.plans" :key="plan" :value="plan">{{Object.keys(plan.quotas).length}}</td>
         </tr>
       </table>
+      <table v-else>
+        <tr>
+          <th></th>
+          <th v-for="plan in Object.keys(apiStats.plans)" :key="plan" :value="plan">{{plan}}</th>
+        </tr>
+        <tr>
+          <th>Cost</th>
+          <td v-for="plan in apiStats.plans" :key="plan" :value="plan">
+            <p v-if="plan.pricing">
+              {{plan.pricing.cost}}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <th>N. Endpoints</th>
+          <td v-for="plan in apiStats.plans" :key="plan" :value="plan">{{Object.keys(plan.quotas).length}}</td>
+        </tr>
+      </table>
     </p>
     <br>
     <pre v-if="Object.keys(api).length != 0" class="api-content">
@@ -148,7 +166,20 @@
         this.restwrapRepositoryData(this.username, this.repositoryName);
       },
       reloadWebsite() {
-        this.$router.go();
+        this.username = "";
+        this.repositoryName = "";
+        this.api = {};
+        this.repositories = [];
+        this.repositoryData = {};
+        this.route = "https://api.github.com/repos/";
+        this.apiStats = {};
+        this.apiStatsLoaded = false;
+        this.actualRepository = "";
+        this.actualFolder = "";
+        this.folderStats = {};
+        this.folderStatsLoaded = false;
+        this.loading = false;
+        //this.$router.go();
       },
       getApiStats(apiUrl) {
         axios.get(`${process.env.VUE_APP_BACK_URL}stats/${apiUrl}`)
@@ -244,7 +275,7 @@
     },
     mounted() {
       this.getUrl();
-      //this.defaultSearch();
+      this.defaultSearch();
     }
   };
 </script>
