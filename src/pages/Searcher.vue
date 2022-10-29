@@ -78,7 +78,10 @@
     <pre v-if="Object.keys(api).length != 0" class="api-content">
       {{api.content}}
     </pre>
-    <br><br>
+    <br>
+    <button class="button-62" role="button" style="background: linear-gradient(to bottom right, #048c1f, #6cbf19);" @click="validateAPI()" v-if="apiStatsLoaded && Object.keys(api).length != 0">Analize API</button>
+    
+    <br>
     <p v-if="loading">LOADING...</p>
     <div v-if="folderStatsLoaded" class="preContainer">
       <pre class="preStats">
@@ -118,7 +121,8 @@
         actualFolder: "",
         folderStats: {},
         folderStatsLoaded: false,
-        loading: false
+        loading: false,
+        pricingURL: "",
       }
     },
     methods: {
@@ -127,38 +131,61 @@
         this.apiStats = {};
         this.apiStatsLoaded = false;
         var url = window.location.href.split("/");
-        if (url.length > 3) {
-          this.username = url[3];
-          this.restwrapRepositories();
-        }
-
-        if (url.length > 4) {
-          let repo = url[4];
-          if (this.repositories.length == 0) {
-            console.log("Waiting for repositories");
-            setTimeout(() => {
-              this.repositories.map((repository) => {
-                if (repository.name == repo) {
-                  this.restwrapRepositoryData(this.username, repo);
-                }
-              });
-            }, 3000);
+        url = url.filter(x => x != "");
+        if (url.length < 3) {
+          this.defaultSearch();
+        } else {
+          if (url.length >= 3) {
+            this.username = url[2];
+            this.restwrapRepositories();
           }
 
-          this.repositories.map((repository) => {
-            if (repository.name == repo) {
-              this.restwrapRepositoryData(this.username, repo);
+          if (url.length >= 4) {
+            let repo = url[3];
+            if (this.repositories.length == 0) {
+              console.log("Waiting for repositories");
+              setTimeout(() => {
+                this.repositories.map((repository) => {
+                  if (repository.name == repo) {
+                    this.repositoryName = repository.name;
+                    this.restwrapRepositoryData(this.username, repo);
+                  }
+                });
+              }, 3000);
             }
-          });
+
+            this.repositories.map((repository) => {
+              if (repository.name == repo) {
+                this.restwrapRepositoryData(this.username, repo);
+              }
+            });
+          }
+          /*
+          if (url.length > 5) {
+            setTimeout(() => {
+              let sublist = url.slice(5, url.length).join("/");
+              this.restwrapFolder(`https://api.github.com/repos/${this.username}/${url[4]}/contents/${sublist}`);
+            }, 4000);
+          }
+          */
         }
-        /*
-        if (url.length > 5) {
-          setTimeout(() => {
-            let sublist = url.slice(5, url.length).join("/");
-            this.restwrapFolder(`https://api.github.com/repos/${this.username}/${url[4]}/contents/${sublist}`);
-          }, 4000);
-        }
-        */
+      },
+      validateAPI() {
+        axios.post("https://sla4oai-analyzer-api.herokuapp.com/api/v1/analysisRequests", {
+          "analysisId": "analysisId",
+          "pricingURL": this.pricingURL,
+          "operation": "validity"
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          }
+        }).then((response) => {
+          console.log(response);
+        }).catch((error) => {
+          console.log(error);
+        });
       },
       defaultSearch() {
         this.username = "isa-group";
@@ -179,6 +206,7 @@
         this.folderStats = {};
         this.folderStatsLoaded = false;
         this.loading = false;
+        this.pricingURL = "";
         //this.$router.go();
       },
       getApiStats(apiUrl) {
@@ -218,7 +246,7 @@
             this.loading = false;
             this.folderStatsLoaded = true;
             this.folderStats = response.data;
-            console.log(response.data);
+            //console.log(response.data);
           })
           .catch(error => {
             console.log(error)
@@ -231,6 +259,8 @@
         axios.get(`${process.env.VUE_APP_BACK_URL}service/${api}`)
           .then(response => {
             this.api = response.data.data;
+            this.pricingURL = this.api.download_url;
+            console.log(this.pricingURL);
           })
           .catch(error => {
             console.log(error);
@@ -275,7 +305,6 @@
     },
     mounted() {
       this.getUrl();
-      this.defaultSearch();
     }
   };
 </script>
