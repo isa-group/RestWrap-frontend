@@ -26,13 +26,14 @@
     </div>
     
     <div v-if="loading == false">
-      <ul class="fileList" v-if="!apiStatsLoaded">
+      <ul class="fileList" v-if="!apiStatsLoaded" style="overflow: auto; height: 300px;">
         <li v-for="file in repositoryData" :key="file.id">
           <a class="fileObject" @click="restwrapFolder(file.url, file.name)" v-if="file.name && (file.type == 'dir' || file.type == 'tree')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16"> <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/> </svg>{{file.name}}</a>
-          <a class="fileObject" @click="restwrapPlan(file.url)" v-if="file.name && (file.type != 'dir' && file.type != 'tree') && (file.name.includes('.yaml') || file.name.includes('.yml'))">{{file.name.replace(".yaml", "").replace(".yml", "")}}</a>
+          <a class="fileObject" @click="restwrapPlan(file.url, file.name)" v-if="file.name && (file.type != 'dir' && file.type != 'tree') && (file.name.includes('.yaml') || file.name.includes('.yml'))">{{file.name.replace(".yaml", "").replace(".yml", "")}}</a>
         </li>
       </ul>
       <br>      
+      <h1 v-if="apiStatsLoaded">{{apiName.replace(".yaml", "").replace(".yml", "")}}</h1>
       <p class="pStatsApi" v-if="!apiStatsLoaded && Object.keys(api).length != 0">This file is not a SLA4OAI file or It is not well created</p>
       <p class="pStatsApi" v-if="apiStatsLoaded && Object.keys(api).length != 0">
         <pre class="preStats">
@@ -91,7 +92,7 @@
       <button class="button-62" role="button" style="background: linear-gradient(to bottom right, #048c1f, #6cbf19);" @click="validateAPI()" v-if="apiStatsLoaded && Object.keys(api).length != 0">Analyze validity</button>
       
       <br>
-      <div v-if="folderStatsLoaded" class="preContainer">
+      <div v-if="folderStatsLoaded && !apiStatsLoaded" class="preContainer">
         <pre class="preStats">
         Number of APIs: {{folderStats.plansQuantity}}
         Number of APIs with limitations: {{folderStats.hasLimitations}}
@@ -133,6 +134,7 @@
         folderStatsLoaded: false,
         loading: false,
         pricingURL: "",
+        apiName: "",
       }
     },
     methods: {
@@ -224,6 +226,7 @@
         this.folderStatsLoaded = false;
         this.loading = false;
         this.pricingURL = "";
+        this.apiName = "";
         //this.$router.go();
       },
       getApiStats(apiUrl) {
@@ -269,7 +272,8 @@
             console.log(error)
           });
       },
-      restwrapPlan(api) {
+      restwrapPlan(api, apiName) {
+        this.apiName = apiName;
         api = api.replace("https://api.github.com/repos/", "");
         api = api.replace("?ref=main", "");
         this.getApiStats(api);
