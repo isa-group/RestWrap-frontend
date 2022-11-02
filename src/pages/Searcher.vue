@@ -1,101 +1,111 @@
 <template>
   <div id="Seacher">
-    Username / Organization:
-    <input type="text" v-model="username" class="searchUser" style="margin-right: 20px;">
-    <button class="button-62" role="button" @click="restwrapRepositories()" v-if="username != '' && repositoryName == ''">
-      Search
-    </button>
-    &ensp;
-    Repository:
-    <select name="repositories" id="repositories" v-if="repositories.length != 0" v-model="repositoryName" class="searchUser" style="margin-right: 20px;">
-      <option value="0">Choose a repository</option>
-      <option v-for="repository in repositories" :key="repository.id" :value="repository.name">{{repository.name}}</option>
-    </select>
-    <button class="button-62" role="button" @click="restwrapRepositoryData(username, repositoryName)" v-if="username != '' && repositoryName != '' && Object.keys(repositoryData).length == 0">
-      Search
-    </button>
-    <button class="button-62" role="button"  style="background: linear-gradient(to bottom right, #47e9ef, #785aff);" @click="reloadWebsite()" v-if="Object.keys(repositoryData).length != 0">
-      Reset Search
-    </button>
-    <ul class="fileList">
-      <li v-for="file in repositoryData" :key="file.id">
-        <a class="fileObject" @click="restwrapFolder(file.url, file.name)" v-if="file.name && (file.type == 'dir' || file.type == 'tree')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16"> <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/> </svg>{{file.name}}</a>
-        <a class="fileObject" @click="restwrapPlan(file.url)" v-if="file.name && (file.type != 'dir' && file.type != 'tree') && (file.name.includes('.yaml') || file.name.includes('.yml'))">{{file.name}}</a>
-      </li>
-    </ul>
-    <br>      
-    <p class="pStatsApi" v-if="!apiStatsLoaded && Object.keys(api).length != 0">This file is not a SLA4OAI file or It is not well created</p>
-    <p class="pStatsApi" v-if="apiStatsLoaded && Object.keys(api).length != 0">
-      <pre class="preStats">
-      Stats:
-      
-      N. Metrics: {{apiStats.numberOfMetrics}}
-      Metrics: {{apiStats.metricsNames.join(", ")}}
-      N. Plans: {{apiStats.numberOfPlans}}
-      Cheapest plan: {{apiStats.cheapestPlan}}
-      Most expensive plan: {{apiStats.mostExpensivePlan}}
-
-      Plans:
-      </pre>
-      <table id="apiStats" v-if="apiStats.plans[Object.keys(apiStats.plans)[0]].pricing.currency">
-        <tr>
-          <th></th>
-          <th v-for="plan in Object.keys(apiStats.plans)" :key="plan" :value="plan">{{plan}}</th>
-        </tr>
-        <tr>
-          <th>Cost</th>
-          <td v-for="plan in apiStats.plans" :key="plan" :value="plan">
-            <p v-if="plan.pricing.currency">
-              {{plan.pricing.cost}} {{plan.pricing.currency}}/{{plan.pricing.period.unit}}
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <th>N. Endpoints</th>
-          <td v-for="plan in apiStats.plans" :key="plan" :value="plan">{{Object.keys(plan.quotas).length}}</td>
-        </tr>
-      </table>
-      <table v-else>
-        <tr>
-          <th></th>
-          <th v-for="plan in Object.keys(apiStats.plans)" :key="plan" :value="plan">{{plan}}</th>
-        </tr>
-        <tr>
-          <th>Cost</th>
-          <td v-for="plan in apiStats.plans" :key="plan" :value="plan">
-            <p v-if="plan.pricing">
-              {{plan.pricing.cost}}
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <th>N. Endpoints</th>
-          <td v-for="plan in apiStats.plans" :key="plan" :value="plan">{{Object.keys(plan.quotas).length}}</td>
-        </tr>
-      </table>
-    </p>
-    <br>
-    <pre v-if="Object.keys(api).length != 0" class="api-content">
-      {{api.content}}
-    </pre>
-    <br>
-    <button class="button-62" role="button" style="background: linear-gradient(to bottom right, #048c1f, #6cbf19);" @click="validateAPI()" v-if="apiStatsLoaded && Object.keys(api).length != 0">Analize API</button>
-    
-    <br>
-    <p v-if="loading">LOADING...</p>
-    <div v-if="folderStatsLoaded" class="preContainer">
-      <pre class="preStats">
-      Number of APIs: {{folderStats.plansQuantity}}
-      Number of APIs with limitations: {{folderStats.hasLimitations}}
-      Number of APIs with quotas: {{folderStats.hasQuotas}}
-      Number of APIs with rates: {{folderStats.hasRates}}
-      Number of APIs with both (quotas and rates): {{folderStats.hasQuotasAndRates}}
-      Number of APIs with a simple cost: {{folderStats.hasSimpleCost}}
-      Number of APIs with a pay-as-you-go plan: {{folderStats.hasPayAsYouGo}}
-      Number of APIs with a overage: {{folderStats.hasOvegare}}
-      </pre>
+    <div>
+      Username / Organization:
+      <input type="text" v-model="username" class="searchUser" style="margin-right: 20px;">
+      <button class="button-62" role="button" @click="restwrapRepositories()" v-if="username != '' && repositoryName == ''">
+        Search
+      </button>
+      &ensp;
+      Repository:
+      <select name="repositories" id="repositories" v-if="repositories.length != 0" v-model="repositoryName" class="searchUser" style="margin-right: 20px;">
+        <option value="0">Choose a repository</option>
+        <option v-for="repository in repositories" :key="repository.id" :value="repository.name">{{repository.name}}</option>
+      </select>
+      <button class="button-62" role="button" @click="restwrapRepositoryData(username, repositoryName)" v-if="username != '' && repositoryName != '' && Object.keys(repositoryData).length == 0">
+        Search
+      </button>
+      <button class="button-62" role="button"  style="background: linear-gradient(to bottom right, #47e9ef, #785aff);" @click="reloadWebsite()" v-if="Object.keys(repositoryData).length != 0">
+        Reset Search
+      </button>
     </div>
-    <br><br>
+
+    <div v-if="loading">
+      <br><br><br><br><br><br><br><br><br>
+      <p>LOADING...</p>
+    </div>
+    
+    <div v-if="loading == false">
+      <ul class="fileList" v-if="!apiStatsLoaded">
+        <li v-for="file in repositoryData" :key="file.id">
+          <a class="fileObject" @click="restwrapFolder(file.url, file.name)" v-if="file.name && (file.type == 'dir' || file.type == 'tree')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16"> <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/> </svg>{{file.name}}</a>
+          <a class="fileObject" @click="restwrapPlan(file.url)" v-if="file.name && (file.type != 'dir' && file.type != 'tree') && (file.name.includes('.yaml') || file.name.includes('.yml'))">{{file.name.replace(".yaml", "").replace(".yml", "")}}</a>
+        </li>
+      </ul>
+      <br>      
+      <p class="pStatsApi" v-if="!apiStatsLoaded && Object.keys(api).length != 0">This file is not a SLA4OAI file or It is not well created</p>
+      <p class="pStatsApi" v-if="apiStatsLoaded && Object.keys(api).length != 0">
+        <pre class="preStats">
+        Stats:
+        
+        N. Metrics: {{apiStats.numberOfMetrics}}
+        Metrics: {{apiStats.metricsNames.join(", ")}}
+        N. Plans: {{apiStats.numberOfPlans}}
+        Cheapest plan: {{apiStats.cheapestPlan}}
+        Most expensive plan: {{apiStats.mostExpensivePlan}}
+
+        Plans:
+        </pre>
+        <table id="apiStats" v-if="apiStats.plans[Object.keys(apiStats.plans)[0]].pricing.currency">
+          <tr>
+            <th></th>
+            <th v-for="plan in Object.keys(apiStats.plans)" :key="plan" :value="plan">{{plan}}</th>
+          </tr>
+          <tr>
+            <th>Cost</th>
+            <td v-for="plan in apiStats.plans" :key="plan" :value="plan">
+              <p v-if="plan.pricing.currency">
+                {{plan.pricing.cost}} {{plan.pricing.currency}}/{{plan.pricing.period.unit}}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <th>N. Endpoints</th>
+            <td v-for="plan in apiStats.plans" :key="plan" :value="plan">{{Object.keys(plan.quotas).length}}</td>
+          </tr>
+        </table>
+        <table v-else>
+          <tr>
+            <th></th>
+            <th v-for="plan in Object.keys(apiStats.plans)" :key="plan" :value="plan">{{plan}}</th>
+          </tr>
+          <tr>
+            <th>Cost</th>
+            <td v-for="plan in apiStats.plans" :key="plan" :value="plan">
+              <p v-if="plan.pricing">
+                {{plan.pricing.cost}}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <th>N. Endpoints</th>
+            <td v-for="plan in apiStats.plans" :key="plan" :value="plan">{{Object.keys(plan.quotas).length}}</td>
+          </tr>
+        </table>
+      </p>
+      <br>
+      <pre v-if="Object.keys(api).length != 0" class="api-content">
+        {{api.content}}
+      </pre>
+      <br>
+      <button class="button-62" role="button" style="background: linear-gradient(to bottom right, #048c1f, #6cbf19);" @click="validateAPI()" v-if="apiStatsLoaded && Object.keys(api).length != 0">Analyze validity</button>
+      
+      <br>
+      <div v-if="folderStatsLoaded" class="preContainer">
+        <pre class="preStats">
+        Number of APIs: {{folderStats.plansQuantity}}
+        Number of APIs with limitations: {{folderStats.hasLimitations}}
+        Number of APIs with quotas: {{folderStats.hasQuotas}}
+        Number of APIs with rates: {{folderStats.hasRates}}
+        Number of APIs with both (quotas and rates): {{folderStats.hasQuotasAndRates}}
+        Number of APIs with a simple cost: {{folderStats.hasSimpleCost}}
+        Number of APIs with a pay-as-you-go plan: {{folderStats.hasPayAsYouGo}}
+        Number of APIs with a overage: {{folderStats.hasOvegare}}
+        </pre>
+      </div>
+      <br><br>
+    </div>
+    
   </div>
 </template>
 
@@ -171,17 +181,21 @@
         }
       },
       validateAPI() {
-        axios.post("https://sla4oai-analyzer-api.herokuapp.com/api/v1/analysisRequests", {
-          "analysisId": "analysisId",
-          "pricingURL": this.pricingURL,
-          "operation": "validity"
-        },
-        {
+        const config = {
+          method: 'post',
+          url: "https://sla4oai-analyzer-api.herokuapp.com/api/v1/analysisRequests",
+          data: {
+            "analysisId": "analysisId",
+            "pricingURL": "https://raw.githubusercontent.com/isa-group/datasets/master/plans/accuweather-sla4oai.yaml",
+            "operation": "validity"
+          },
           headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
+            "Content-Type": "application/JSON",
+              "Access-Control-Allow-Origin": "*"
           }
-        }).then((response) => {
+        };
+        axios(config)
+        .then((response) => {
           console.log(response);
         }).catch((error) => {
           console.log(error);
@@ -190,6 +204,9 @@
       defaultSearch() {
         this.username = "isa-group";
         this.repositoryName = "datasets";
+        this.repositories = [{
+          name: "datasets"
+        }];
         this.restwrapRepositoryData(this.username, this.repositoryName);
       },
       reloadWebsite() {
@@ -312,6 +329,7 @@
 <style>
 * {
   box-sizing: border-box;
+  background-color: #ffffff;
 }
 
 .column1 {
